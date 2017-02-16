@@ -1,18 +1,22 @@
+module Test where
+
 import Prelude hiding (map, filter, take, drop)
 
 fact :: Integer -> Integer
-fact = undefined
+fact n = if n == 0 then 1 else n * fact (n-1)
 
 fact' :: Integer -> Integer
-fact' = undefined
+fact' 0 = 1
+fact' n = n * fact' (n-1)
 
 fact'' :: Integer -> Integer
-fact'' = undefined
+fact'' n | n == 0 = 1
+         | otherwise = n * fact'' (n-1)
 
 add3 :: Int -> Int -> Int -> Int
-add3 = undefined
+add3 x y z = x + y + z
 
-ex16 = undefined
+ex16 = add3 3
 
 -- Try:
 --add x = x + "String"
@@ -21,10 +25,16 @@ ex16 = undefined
 -- List operations
 --
 
--- map :: (a -> b) -> [a] -> [b]
+map f xs = undefined
 
--- append :: [a] -> [a] -> [a]
+append xs ys = undefined
 
--- take :: Int -> [a] -> [a]
+take n xs = undefined
 
--- drop :: Int -> [a] -> [a]
+drop n xs = undefined
+
+--
+-- Binary Trees
+--
+
+data Tree
