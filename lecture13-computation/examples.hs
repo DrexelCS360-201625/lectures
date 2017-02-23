@@ -1,7 +1,8 @@
-{-# OPTIONS_GHC -fno-warn-amp #-}
+module Test where
 
 import Prelude hiding (Maybe(..), Either(..))
 
+import Control.Monad (ap)
 import Data.Complex
 import System.Random
 
@@ -62,7 +63,7 @@ lift :: (Float -> Float) -> Float -> (Float, String)
 -}
 
 --
--- Multivalue functions
+-- Multivalued functions
 --
 sqrt', cbrt' :: Complex Float -> [Complex Float]
 cbrt' = rootC 3
@@ -72,10 +73,10 @@ rootC :: Float -> Complex Float -> [Complex Float]
 rootC n (a :+ b) =
     zipWith (:+) r i
   where
-    r   = map (* (mod ** (1/n) )) $ map cos $ map arg [0..n-1]
-    i   = map (* (mod ** (1/n) )) $ map sin $ map arg [0..n-1]
+    r   = map (* (m ** (1/n) )) $ map cos $ map arg [0..n-1]
+    i   = map (* (m ** (1/n) )) $ map sin $ map arg [0..n-1]
     arg = ( * (2*pi / n) )
-    mod = sqrt (a*a + b*b)
+    m   = sqrt (a*a + b*b)
 
 {-
 bind :: [Complex Float] -> (Complex Float -> [Complex Float]) -> [Complex Float]
@@ -116,6 +117,9 @@ newtype Multivalued a = M { unM :: [a] }
 
 newtype Randomized a = R { unR :: StdGen -> (a, StdGen) }
 
+instance Functor Debuggable where
+    fmap f (D (x, s)) = D (f x, s)
+
 instance Monad Debuggable where
     return x = D (x, "")
 
@@ -123,10 +127,19 @@ instance Monad Debuggable where
                       in
                         D (y, s1 ++ s2)
 
+instance Functor Multivalued where
+    fmap f (M xs) = M (fmap f xs)
+
 instance Monad Multivalued where
     return x = M [x]
 
     M xs >>= f = M $ concat (map unM (map f xs))
+
+instance Functor Randomized where
+    fmap f (R g) = R $ \s ->
+        let (x, s') = g s
+        in
+            (f x, s')
 
 instance Monad Randomized where
     return x = R $ \s -> (x, s)
@@ -135,3 +148,19 @@ instance Monad Randomized where
                 let (y, s') = x s
                 in
                   unR (f y) s'
+
+instance Applicative Maybe where
+  pure  = return
+  (<*>) = ap
+
+instance Applicative Debuggable where
+  pure  = return
+  (<*>) = ap
+
+instance Applicative Randomized where
+  pure  = return
+  (<*>) = ap
+
+instance Applicative Multivalued where
+  pure  = return
+  (<*>) = ap
